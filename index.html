@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Screen Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .input1{
+            position:float;
+            top:0;
+            left:0;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script>
+const map = L.map('map'); 
+
+var hospitalIcon = L.icon({
+    iconUrl: 'images/3rd.jpg',
+    iconSize:     [26, 45], 
+    iconAnchor:   [10, 25],
+    popupAnchor:  [-3, -76] 
+});
+var ambulanceIcon = L.icon({
+    iconUrl: 'images/amb.jpg',
+    iconSize:     [26, 45], 
+    iconAnchor:   [14, 45],
+    popupAnchor:  [-3, -76] 
+});
+var traffic_red = L.icon({
+    iconUrl: 'images/redt.png',
+    iconSize:     [26, 35], 
+    iconAnchor:   [14, 45],
+    popupAnchor:  [-3, -76] 
+});
+var traffic_green = L.icon({
+    iconUrl: 'images/greent.jpg',
+    iconSize:     [26, 35], 
+    iconAnchor:   [14, 45],
+    popupAnchor:  [-3, -76] 
+});
+hospital_icon1= L.marker([31.363125, 75.599045], {icon: hospitalIcon}).addTo(map);
+hospital_icon2= L.marker([31.336101, 75.564560], {icon: hospitalIcon}).addTo(map);
+hospital_icon3= L.marker([31.344854, 75.493753], {icon: hospitalIcon}).addTo(map);
+hospital_icon4= L.marker([31.330493, 75.563674], {icon: hospitalIcon}).addTo(map);
+hospital_icon5= L.marker([31.325036, 75.568361], {icon: hospitalIcon}).addTo(map);
+hospital_icon6= L.marker([31.308218, 75.565863], {icon: hospitalIcon}).addTo(map);
+tflr= L.marker([31.354337, 75.590857], {icon: traffic_red}).addTo(map);
+map.setView([51.505, -0.09], 13); 
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+}).addTo(map); 
+
+let marker, circle, zoomed;
+var show=0;
+let count=0;
+let green = false;
+navigator.geolocation.watchPosition(success, error);
+function success(pos) {
+    count++;
+    console.log(count);
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const accuracy = pos.coords.accuracy;
+    console.log(lat+","+lng);
+    if (marker) {
+        map.removeLayer(marker);
+        map.removeLayer(circle);
+    }
+
+    marker = L.marker([lat, lng],{icon: ambulanceIcon}).addTo(map);
+    circle = L.circle([lat, lng], { radius: accuracy}).addTo(map);
+    if((((31.354337-lat)**2+(75.590857-lng)**2)**(1/2))<=0.02&&green==false){
+        tflg= L.marker([31.354337, 75.590857], {icon: traffic_green}).addTo(map);
+        map.removeLayer(tflr);
+        count=0;
+        green=true;
+        console.log("lol")
+    }else if (count==1 && green==true){
+        green==false;
+        map.removeLayer(tflg);
+        tflr= L.marker([31.354337, 75.590857], {icon: traffic_red}).addTo(map);
+        count=0;
+    }
+    if (!zoomed) {
+        zoomed = map.fitBounds(circle.getBounds()); 
+    }
+    if (show!==1){
+        L.Routing.control({
+  waypoints: [
+    L.latLng(lat,lng),
+    L.latLng(31.363125, 75.599045)
+  ]
+}).addTo(map);
+    show=show+1;
+    }
+    map.setView([lat, lng]);
+
+}
+
+function error(err) {
+
+    if (err.code === 1) {
+        alert("Please allow geolocation access");
+    }
+
+}
+</script>
+</body>
+</html>
